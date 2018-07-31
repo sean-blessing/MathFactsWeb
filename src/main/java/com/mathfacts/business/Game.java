@@ -1,12 +1,25 @@
 package com.mathfacts.business;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+@Entity
 public class Game {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id = 0;
-	private int userID;
+	@ManyToOne
+	@JoinColumn(name="userID")
+	private User user;
 	private String type;
-	private Date datePlayed;
+	private Timestamp datePlayed;
 	private long startTime;
 	private long endTime;
 	private double elapsedTime;
@@ -14,8 +27,8 @@ public class Game {
 	private int numWrong = 0;
 	
 	
-	public Game(int uid, String t) {
-		userID = uid;
+	public Game(User u, String t) {
+		user = u;
 		type = t;
 	}
 	
@@ -27,12 +40,12 @@ public class Game {
 		this.id = id;
 	}
 
-	public int getUserID() {
-		return userID;
+	public User getUser() {
+		return user;
 	}
 
-	public void setUserID(int userID) {
-		this.userID = userID;
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 	public String getType() {
@@ -43,11 +56,11 @@ public class Game {
 		this.type = type;
 	}
 
-	public Date getDatePlayed() {
+	public Timestamp getDatePlayed() {
 		return datePlayed;
 	}
 
-	public void setDatePlayed(Date datePlayed) {
+	public void setDatePlayed(Timestamp datePlayed) {
 		this.datePlayed = datePlayed;
 	}
 

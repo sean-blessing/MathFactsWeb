@@ -3,21 +3,31 @@ package com.mathfacts;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Optional;
 import java.util.function.IntBinaryOperator;
+import com.mathfacts.business.UserRepository;
+import com.mathfacts.business.UserService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import com.mathfacts.business.FactsNumbers;
 import com.mathfacts.business.Game;
 import com.mathfacts.business.Operation;
+import com.mathfacts.business.User;
 import com.mathfacts.util.Console;
 
 @SpringBootApplication
+@EnableJpaRepositories("com.mathfacts.business")
 public class MathFactsWebApplication {
 	private static boolean loggedOn = false;
-	private static String userID = "";
+	private static User user = null;
+	private static UserService userSvc;
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(MathFactsWebApplication.class, args);
@@ -31,7 +41,7 @@ public class MathFactsWebApplication {
 		String choice = Console.getString(displayMenu());
 		while (!choice.equalsIgnoreCase("x")) {
 			long startTime = System.currentTimeMillis();
-			Date datePlayed = new Date(startTime);
+			Timestamp datePlayed = new Timestamp(startTime);
 			Game g = playMathFacts(choice);
 			long endTime = System.currentTimeMillis();
 			long elapsedTime = endTime - startTime;
@@ -40,7 +50,7 @@ public class MathFactsWebApplication {
 			g.setEndTime(endTime);
 			SimpleDateFormat sdf = new SimpleDateFormat("K:mm:ss' 'a");
 			System.out.println("\n====================================");
-			System.out.println("Thanks for playing, "+userID+"!!!");
+			System.out.println("Thanks for playing, "+user.getFirstName()+"!!!");
 			System.out.println("Start time = "+sdf.format(startTime));
 			System.out.println("End time = "+sdf.format(endTime));
 			BigDecimal secondsBD = new BigDecimal(elapsedTime);
@@ -70,8 +80,7 @@ public class MathFactsWebApplication {
 		System.out.println(opr.getOperationString()+" Facts\n");
 		int numRight = 0;
 		int numWrong = 0;
-		//TODO setting uid to 0 until I get DB built
-		Game g = new Game(0,choice);
+		Game g = new Game(user,choice);
 		boolean correct = false;
 		
 		for (int i=1; i<=10; i++) {
@@ -174,11 +183,21 @@ public class MathFactsWebApplication {
 	}
 
 	private static void userLogin() {
-		userID = Console.getString("Enter userID:  ");
-		if (userID!=null && !userID.trim().equals("")) {
-			System.out.println("Welcome "+userID+"!!");
+		while (!loggedOn) {
+			String userName = Console.getString("Enter userName:  ");
+			String pwd = Console.getString("Enter Password:  ");
+
+			UserService uSvc = new UserService();
+			User u = uSvc.userRepo.findByUserNameAndPassword(userName,pwd);
+			if (u!=null) {
+				System.out.println("Welcome "+u.getFirstName()+"!!");
+				user = u;
+				loggedOn = true;
+			}
+			else {
+				System.err.println("Invalid login.  Please try again.");
+			}
 		}
-		
 	}
 
 }
